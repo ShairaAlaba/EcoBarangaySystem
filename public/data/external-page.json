@@ -1,0 +1,169 @@
+{
+  "title": "Eco-Barangay: Community E-Waste Collection System",
+  "description": "A community-driven solution that coordinates e-waste collection from puroks to the barangay for safe and responsible disposal. The system streamlines pickup scheduling, tracking, and reporting to help local governments manage electronic waste effectively.",
+  "subtitle": "Organizing E-Waste Collection for Cleaner Barangays",
+  "backgroundImage": {
+    "src": "/images/markup.png",
+    "alt": "Abstract academic background with geometric patterns",
+    "overlay": {
+      "enabled": true,
+      "color": "rgba(34, 139, 34, 0.12)",
+      "opacity": 0.8
+    }
+  },
+  "features": [
+    {
+      "title": "Purok-Level Pickup Coordination",
+      "description": "Residents schedule e-waste pickups at the purok level so collections can be consolidated at the barangay for proper disposal.",
+      "icon": "mdi-map-marker-multiple"
+    },
+    {
+      "title": "Collection Tracking & Reporting",
+      "description": "Track inbound e-waste by category and generate reports for barangay officials to simplify disposal and recycling workflows.",
+      "icon": "mdi-truck-delivery"
+    },
+    {
+      "title": "Safe Handling Guidelines",
+      "description": "Provide residents with clear instructions for preparing electronic waste (batteries, small appliances, devices) to reduce hazards during collection and storage.",
+      "icon": "mdi-shield-check"
+    },
+    {
+      "title": "Community Engagement & Incentives",
+      "description": "Encourage participation through community drives, incentive programs, and transparent collection results shared with residents.",
+      "icon": "mdi-account-group"
+    }
+  ],
+  "version": "1.0.0",
+  "author": "Eco-Barangay Development Team",
+  "lastUpdated": "2025-10-08",
+  "theme": {
+    "primaryColor": "#2E7D32",
+    "secondaryColor": "#C8E6C9"
+  },
+  "ui": {
+    "showNavbar": true,
+    "showFooter": true,
+    "_comment": "Select the navbar component to use: 1, 2, 3, or 4",
+    "navbarComponent": "1",
+    "_footerComment": "Select the footer component to use: 1 or 2",
+    "footerComponent": "1",
+    "navbar": {
+      "title": "Eco-Barangay E-Waste",
+      "icon": "mdi-recycle",
+      "logo": {
+        "src": "/src/assets/logo.png",
+        "alt": "Eco-Barangay Logo",
+        "width": 32,
+        "height": 32
+      },
+      "color": "primary",
+      "elevation": 2,
+      "density": "comfortable",
+      "navigationItems": [
+        {
+          "_comment": "dont change this",
+          "label": "Features",
+          "action": "scroll",
+          "target": "features"
+        },
+        {
+          "_comment": "dont change this",
+          "label": "About",
+          "action": "scroll",
+          "target": "about"
+        }
+      ],
+      "ctaButton": {
+        "label": "Get Involved",
+        "variant": "outlined",
+        "color": "on-primary",
+        "action": "navigate",
+        "_comment": "dont change this /auth cause it is linked to the auth page",
+        "target": "/auth"
+      }
+    },
+    "footer": {
+      "companyName": "Eco-Barangay",
+      "tagline": "Collect. Consolidate. Dispose Responsibly.",
+      "icon": "mdi-recycle",
+      "color": "grey-darken-3",
+      "copyright": "Eco-Barangay Team. All rights reserved.",
+      "socialLinks": [
+        {
+          "platform": "github",
+          "icon": "mdi-github",
+          "url": "https://github.com",
+          "label": "GitHub"
+        },
+        {
+          "platform": "facebook",
+          "icon": "mdi-facebook",
+          "url": "https://facebook.com",
+          "label": "Facebook"
+        },
+        {
+          "platform": "linkedin",
+          "icon": "mdi-linkedin",
+          "url": "https://linkedin.com",
+          "label": "LinkedIn"
+        }
+      ],
+      "technologies": [
+        {
+          "name": "Community Coordination",
+          "icon": "mdi-account-multiple",
+          "color": "green"
+        },
+        {
+          "name": "Waste Tracking",
+          "icon": "mdi-chart-line",
+          "color": "teal"
+        }
+      ],
+      "thesisTeam": {
+        "enabled": true,
+        "title": "Project Team",
+        "subtitle": "Meet the community members and developers",
+        "members": [
+          {
+            "name": "Project Lead",
+            "role": "Coordinator",
+            "avatar": "/images/team/sarah.jpg"
+          },
+          {
+            "name": "Community Liaison",
+            "role": "Outreach",
+            "avatar": "/images/team/michael.jpg"
+          },
+          {
+            "name": "Technical Specialist",
+            "role": "Systems",
+            "avatar": "/images/team/emma.jpg"
+          }
+        ]
+      }
+    }
+  },
+  "authPage": {
+    "title": "Welcome to Eco-Barangay E-Waste Portal",
+    "subtitle": "Join your purok and barangay in responsible e-waste collection",
+    "layout": {
+      "quotePosition": "right"
+    },
+    "quote": {
+      "text": "Small acts, when multiplied by millions of people, can transform the world.",
+      "author": "Howard Zinn",
+      "source": "Community Wisdom",
+      "motivationalText": "Sign up to coordinate pickups, report collections, and help keep your barangay clean and safe."
+    },
+    "backgroundImage": {
+      "src": "/images/auth-background.jpg",
+      "alt": "Community volunteers collecting e-waste",
+      "overlay": {
+        "enabled": true,
+        "color": "rgba(34, 139, 34, 0.08)",
+        "opacity": 0.9
+      }
+    }
+  }
+}
