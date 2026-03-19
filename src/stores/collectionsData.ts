@@ -16,6 +16,8 @@ export type Collection = {
   garbage_type: string;
   notes?: string;
   is_hazardous?: boolean;
+  scheduled_date?: string;
+  time_slot?: string;
 };
 
 export type Feedback = {
@@ -90,6 +92,8 @@ export type CreateCollectionData = {
   garbage_type: string;
   notes?: string;
   is_hazardous?: boolean;
+  scheduled_date?: string;
+  time_slot?: string;
 };
 
 export type UpdateCollectionData = {
@@ -1023,6 +1027,15 @@ export const useCollectionsStore = defineStore("collections", () => {
     loading.value = true;
     error.value = undefined;
 
+    // Extract real message from JS Error or PostgrestError
+    const extractMsg = (err: any): string => {
+      if (!err) return "Unknown error";
+      if (typeof err.message === "string" && err.message) return err.message;
+      if (typeof err.error_description === "string") return err.error_description;
+      if (typeof err === "string") return err;
+      return JSON.stringify(err);
+    };
+
     try {
       const { data, error: createError } = await supabase
         .from("collections")
@@ -1030,20 +1043,40 @@ export const useCollectionsStore = defineStore("collections", () => {
         .select()
         .single();
 
-      if (createError) throw createError;
+      if (createError) {
+        const msg = extractMsg(createError);
+        // If error is about missing columns, retry without scheduled_date / time_slot
+        const isMissingColumn =
+          msg.includes("scheduled_date") ||
+          msg.includes("time_slot") ||
+          (createError as any).code === "42703";
 
-      // Note: we don't need to manually update state here as realtime subscription will catch it
-      // but for immediate feedback we can optimistic update or let the sub handle it.
-      // Optimistic update:
-      // collections.value.unshift(data);
-      // But we lack email data, so better let realtime fetch it or sub handle it.
-      // For now, keeping legacy behavior (unshift) but casting.
-      // collections.value.unshift(data as CollectionWithEmails);
+        if (isMissingColumn) {
+          console.warn("scheduled_date/time_slot columns not found in DB — retrying without them. Add those columns to Supabase to enable scheduling.");
+          const fallbackData: any = { ...collectionData };
+          delete fallbackData.scheduled_date;
+          delete fallbackData.time_slot;
+          const { data: fbData, error: fbError } = await supabase
+            .from("collections")
+            .insert([fallbackData])
+            .select()
+            .single();
+          if (fbError) {
+            error.value = extractMsg(fbError);
+            console.error("Fallback create error:", fbError);
+            return undefined;
+          }
+          return fbData;
+        }
+
+        error.value = msg;
+        console.error("Create collection error:", createError);
+        return undefined;
+      }
 
       return data;
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : "Failed to create collection";
+      error.value = extractMsg(err);
       console.error("Create collection error:", err);
       return undefined;
     } finally {
@@ -1610,6 +1643,58 @@ export const useCollectionsStore = defineStore("collections", () => {
     };
   };
 
+  /**
+   * Fetch all collections that have a scheduled_date (for calendar views)
+   */
+  const fetchScheduledCollections = async (): Promise<CollectionWithEmails[]> => {
+    loading.value = true;
+    error.value = undefined;
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('collections_with_user_info')
+        .select('*')
+        .not('scheduled_date', 'is', null)
+        .order('scheduled_date', { ascending: true });
+
+      if (fetchError) throw fetchError;
+      return (data || []) as CollectionWithEmails[];
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch scheduled collections';
+      return [];
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Get slot counts grouped by date and time_slot
+   * Returns { [dateStr]: { morning: number, afternoon: number } }
+   */
+  const getSlotCountsByDate = async (): Promise<Record<string, { morning: number; afternoon: number }>> => {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('collections')
+        .select('scheduled_date, time_slot')
+        .not('scheduled_date', 'is', null)
+        .neq('status', 'cancelled');
+
+      if (fetchError) throw fetchError;
+
+      const counts: Record<string, { morning: number; afternoon: number }> = {};
+      (data || []).forEach((row: any) => {
+        const d = row.scheduled_date as string;
+        const slot = row.time_slot as string;
+        if (!counts[d]) counts[d] = { morning: 0, afternoon: 0 };
+        if (slot === 'morning') counts[d].morning++;
+        else if (slot === 'afternoon') counts[d].afternoon++;
+      });
+      return counts;
+    } catch (err) {
+      console.error('getSlotCountsByDate error:', err);
+      return {};
+    }
+  };
+
   // Realtime subscription
   const subscribeToCollections = () => {
     const channel = supabase
@@ -1703,6 +1788,9 @@ export const useCollectionsStore = defineStore("collections", () => {
     // Status count functions
     getStatusCounts,
     getStatusCountsFromArray,
+    // Schedule helpers
+    fetchScheduledCollections,
+    getSlotCountsByDate,
     // Purok Monitoring
     fetchPurokMonitoring,
     updatePurokStatus,

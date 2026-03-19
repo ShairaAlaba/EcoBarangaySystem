@@ -19,6 +19,7 @@ import RequestsHistoryView from "@/pages/collectors/RequestsHistoryView.vue";
 import PickupsView from "@/pages/barangay/PickupsView.vue";
 import MonitoringView from "@/pages/barangay/MonitoringView.vue";
 import ReportAnalysisView from "@/pages/barangay/ReportAnalysisView.vue";
+import ScheduleCalendarView from "@/pages/barangay/ScheduleCalendarView.vue";
 
 // Residents pages
 import MyFeedbackView from "@/pages/residents/MyFeedbackView.vue";
@@ -69,6 +70,11 @@ const routes = setupLayouts([
   {
     path: "/barangay/report-analysis",
     component: ReportAnalysisView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/barangay/schedule-calendar",
+    component: ScheduleCalendarView,
     meta: { requiresAuth: true },
   },
   // Residents routes

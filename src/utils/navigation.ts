@@ -67,6 +67,12 @@ export const navigationConfig: NavigationGroup[] = [
         route: "/barangay/report-analysis",
         permission: "barangay.reports.view",
       },
+      {
+        title: "Schedule Calendar",
+        icon: "mdi-calendar-month",
+        route: "/barangay/schedule-calendar",
+        permission: "barangay.schedule.view",
+      },
     ],
   },
 

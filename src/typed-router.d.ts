@@ -52,6 +52,7 @@ declare module 'vue-router/auto-routes' {
     '/barangay/MonitoringView': RouteRecordInfo<'/barangay/MonitoringView', '/barangay/MonitoringView', Record<never, never>, Record<never, never>>,
     '/barangay/PickupsView': RouteRecordInfo<'/barangay/PickupsView', '/barangay/PickupsView', Record<never, never>, Record<never, never>>,
     '/barangay/ReportAnalysisView': RouteRecordInfo<'/barangay/ReportAnalysisView', '/barangay/ReportAnalysisView', Record<never, never>, Record<never, never>>,
+    '/barangay/ScheduleCalendarView': RouteRecordInfo<'/barangay/ScheduleCalendarView', '/barangay/ScheduleCalendarView', Record<never, never>, Record<never, never>>,
     '/collectors/components/RequestsHistoryWidget': RouteRecordInfo<'/collectors/components/RequestsHistoryWidget', '/collectors/components/RequestsHistoryWidget', Record<never, never>, Record<never, never>>,
     '/collectors/components/RequestsPagination': RouteRecordInfo<'/collectors/components/RequestsPagination', '/collectors/components/RequestsPagination', Record<never, never>, Record<never, never>>,
     '/collectors/components/RequestsWidget': RouteRecordInfo<'/collectors/components/RequestsWidget', '/collectors/components/RequestsWidget', Record<never, never>, Record<never, never>>,
@@ -80,5 +81,6 @@ declare module 'vue-router/auto-routes' {
     '/residents/MyCollectionsView': RouteRecordInfo<'/residents/MyCollectionsView', '/residents/MyCollectionsView', Record<never, never>, Record<never, never>>,
     '/residents/MyCollectionsWidget': RouteRecordInfo<'/residents/MyCollectionsWidget', '/residents/MyCollectionsWidget', Record<never, never>, Record<never, never>>,
     '/residents/MyFeedbackView': RouteRecordInfo<'/residents/MyFeedbackView', '/residents/MyFeedbackView', Record<never, never>, Record<never, never>>,
+    '/residents/MyScheduleWidget': RouteRecordInfo<'/residents/MyScheduleWidget', '/residents/MyScheduleWidget', Record<never, never>, Record<never, never>>,
   }
 }
