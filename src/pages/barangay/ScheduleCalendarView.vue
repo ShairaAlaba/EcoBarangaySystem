@@ -288,7 +288,7 @@ onMounted(fetchData);
         <v-row>
           <!-- Left: Calendar -->
           <v-col cols="12" md="5">
-            <v-card rounded="lg" elevation="3">
+            <v-card rounded="lg" elevation="3" class="h-100 schedule-card">
               <v-card-title
                 class="bg-primary text-white py-3 px-4 d-flex align-center"
               >
@@ -410,7 +410,7 @@ onMounted(fetchData);
 
           <!-- Right: Resident List -->
           <v-col cols="12" md="7">
-            <v-card rounded="lg" elevation="3" class="h-100">
+            <v-card rounded="lg" elevation="3" class="h-100 schedule-card">
               <v-card-title
                 class="bg-teal-darken-1 text-white py-3 px-4 d-flex align-center"
               >
@@ -597,7 +597,7 @@ onMounted(fetchData);
                             </v-icon>
                           </div>
                           <div
-                            class="text-caption text-medium-emphasis mt-1 text-truncate"
+                            class="text-caption mt-1 text-truncate"
                             style="max-width: 280px"
                           >
                             {{ item.address }}
@@ -605,9 +605,7 @@ onMounted(fetchData);
                         </v-list-item-subtitle>
 
                         <template #append>
-                          <div
-                            class="text-caption text-medium-emphasis text-right"
-                          >
+                          <div class="text-caption text-right">
                             #{{ item.id }}
                           </div>
                         </template>
@@ -639,7 +637,7 @@ export default { name: "ScheduleCalendarView" };
     font-size: 10px;
     font-weight: 700;
     text-align: center;
-    color: rgba(0, 0, 0, 0.45);
+    color: rgba(var(--v-theme-on-surface), 0.6);
     text-transform: uppercase;
   }
 }
@@ -658,17 +656,19 @@ export default { name: "ScheduleCalendarView" };
     background 0.12s,
     transform 0.1s;
   position: relative;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 .brd-num {
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
+  color: inherit;
 }
 .brd-count {
   font-size: 10px;
   font-weight: 600;
-  color: #1976d2;
+  color: rgb(var(--v-theme-primary));
   position: absolute;
   top: 3px;
   right: 5px;
@@ -684,10 +684,10 @@ export default { name: "ScheduleCalendarView" };
   height: 6px;
   border-radius: 50%;
   &.dot-ok {
-    background: #4caf50;
+    background: rgb(var(--v-theme-success));
   }
   &.dot-full {
-    background: #f44336;
+    background: rgb(var(--v-theme-error));
   }
 }
 
@@ -697,42 +697,42 @@ export default { name: "ScheduleCalendarView" };
     background: transparent;
   }
   &--empty-slot {
-    background: #f9f9f9;
+    background: rgb(var(--v-theme-surface-variant));
     &:hover {
-      background: #eeeeee;
+      background: rgba(var(--v-theme-on-surface), 0.08);
     }
   }
   &--past {
-    background: #f4f4f4;
-    color: rgba(0, 0, 0, 0.35);
+    background: rgba(var(--v-theme-on-surface), 0.04);
+    color: rgba(var(--v-theme-on-surface), 0.35);
     cursor: not-allowed;
     opacity: 0.75;
     &:hover {
-      background: #f4f4f4;
+      background: rgba(var(--v-theme-on-surface), 0.04);
       transform: none;
     }
   }
   &--has-items {
-    background: #e3f2fd;
-    border: 1.5px solid #1976d2;
+    background: rgba(var(--v-theme-primary), 0.12);
+    border: 1.5px solid rgba(var(--v-theme-primary), 0.5);
     &:hover {
-      background: #bbdefb;
+      background: rgba(var(--v-theme-primary), 0.18);
       transform: scale(1.07);
     }
   }
   &--full {
-    background: #ffebee;
-    border: 1.5px solid #f44336;
+    background: rgba(var(--v-theme-error), 0.12);
+    border: 1.5px solid rgba(var(--v-theme-error), 0.5);
     cursor: default;
   }
   &--selected {
-    background: #1976d2 !important;
-    color: white !important;
+    background: rgb(var(--v-theme-primary)) !important;
+    color: rgb(var(--v-theme-on-primary)) !important;
     .brd-num {
-      color: white;
+      color: rgb(var(--v-theme-on-primary));
     }
     .brd-count {
-      color: #bbdefb;
+      color: rgba(var(--v-theme-on-primary), 0.82);
     }
   }
 }
@@ -744,15 +744,15 @@ export default { name: "ScheduleCalendarView" };
   border-radius: 4px;
   display: inline-block;
   &--items {
-    background: #e3f2fd;
-    border: 1.5px solid #1976d2;
+    background: rgba(var(--v-theme-primary), 0.12);
+    border: 1.5px solid rgba(var(--v-theme-primary), 0.5);
   }
   &--full {
-    background: #ffebee;
-    border: 1.5px solid #f44336;
+    background: rgba(var(--v-theme-error), 0.12);
+    border: 1.5px solid rgba(var(--v-theme-error), 0.5);
   }
   &--selected {
-    background: #1976d2;
+    background: rgb(var(--v-theme-primary));
   }
 }
 
@@ -772,5 +772,20 @@ export default { name: "ScheduleCalendarView" };
 .resident-list {
   max-height: 500px;
   overflow-y: auto;
+  background-color: white;
+}
+
+.v-theme--dark .resident-list {
+  background-color: rgb(var(--v-theme-surface));
+}
+
+.schedule-card {
+  background-color: white;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.v-theme--dark .schedule-card {
+  background-color: rgb(var(--v-theme-surface));
+  border-color: rgba(var(--v-theme-on-surface), 0.14);
 }
 </style>
