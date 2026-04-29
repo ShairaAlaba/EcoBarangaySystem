@@ -60,6 +60,7 @@ declare module 'vue-router/auto-routes' {
     '/collectors/dialogs/RequestDialog': RouteRecordInfo<'/collectors/dialogs/RequestDialog', '/collectors/dialogs/RequestDialog', Record<never, never>, Record<never, never>>,
     '/collectors/RequestsHistoryView': RouteRecordInfo<'/collectors/RequestsHistoryView', '/collectors/RequestsHistoryView', Record<never, never>, Record<never, never>>,
     '/collectors/RequestsView': RouteRecordInfo<'/collectors/RequestsView', '/collectors/RequestsView', Record<never, never>, Record<never, never>>,
+    '/collectors/ScheduleCalendarView': RouteRecordInfo<'/collectors/ScheduleCalendarView', '/collectors/ScheduleCalendarView', Record<never, never>, Record<never, never>>,
     '/developers/AnnouncementsView': RouteRecordInfo<'/developers/AnnouncementsView', '/developers/AnnouncementsView', Record<never, never>, Record<never, never>>,
     '/developers/components/AnnouncementFormDialog': RouteRecordInfo<'/developers/components/AnnouncementFormDialog', '/developers/components/AnnouncementFormDialog', Record<never, never>, Record<never, never>>,
     '/developers/components/AnnouncementsWidget': RouteRecordInfo<'/developers/components/AnnouncementsWidget', '/developers/components/AnnouncementsWidget', Record<never, never>, Record<never, never>>,

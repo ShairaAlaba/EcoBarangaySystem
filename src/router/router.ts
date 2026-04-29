@@ -14,6 +14,7 @@ import FeedbackManagementView from "@/pages/admin/FeedbackManagementView.vue";
 // Collectors pages
 import RequestsView from "@/pages/collectors/RequestsView.vue";
 import RequestsHistoryView from "@/pages/collectors/RequestsHistoryView.vue";
+import CollectorsScheduleCalendarView from "@/pages/collectors/ScheduleCalendarView.vue";
 
 // Barangay Officials pages
 import PickupsView from "@/pages/barangay/PickupsView.vue";
@@ -54,6 +55,11 @@ const routes = setupLayouts([
   {
     path: "/collectors/requests-history",
     component: RequestsHistoryView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/collectors/schedule-calendar",
+    component: CollectorsScheduleCalendarView,
     meta: { requiresAuth: true },
   },
   // Barangay Officials routes
