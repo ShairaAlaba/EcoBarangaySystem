@@ -1659,7 +1659,39 @@ export const useCollectionsStore = defineStore("collections", () => {
         .order("scheduled_date", { ascending: true });
 
       if (fetchError) throw fetchError;
-      return (data || []) as CollectionWithEmails[];
+
+      const scheduledCollections = (data || []) as CollectionWithEmails[];
+      const userIds = new Set<string>();
+
+      scheduledCollections.forEach((collection) => {
+        if (collection.request_by) userIds.add(collection.request_by);
+        if (collection.collector_assign)
+          userIds.add(collection.collector_assign);
+      });
+
+      const userDataMap = new Map<
+        string,
+        { email?: string; full_name?: string }
+      >();
+
+      await Promise.all(
+        Array.from(userIds).map(async (userId) => {
+          const userData = await getUserEmail(userId);
+          if (userData) {
+            userDataMap.set(userId, userData);
+          }
+        }),
+      );
+
+      return scheduledCollections.map((collection) => ({
+        ...collection,
+        requester_email: userDataMap.get(collection.request_by)?.email,
+        requester_name: userDataMap.get(collection.request_by)?.full_name,
+        collector_email: userDataMap.get(collection.collector_assign || "")
+          ?.email,
+        collector_name: userDataMap.get(collection.collector_assign || "")
+          ?.full_name,
+      }));
     } catch (err) {
       error.value =
         err instanceof Error

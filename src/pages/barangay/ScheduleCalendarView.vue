@@ -544,11 +544,7 @@ onMounted(fetchData);
                         <v-list-item-title
                           class="font-weight-medium text-body-2"
                         >
-                          {{
-                            item.requester_name ||
-                            item.requester_email ||
-                            "Unknown Resident"
-                          }}
+                          {{ item.requester_name || "Unknown Resident" }}
                         </v-list-item-title>
 
                         <v-list-item-subtitle class="mt-1">
