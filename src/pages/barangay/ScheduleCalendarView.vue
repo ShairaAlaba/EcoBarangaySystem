@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useCollectionsStore } from "@/stores/collectionsData";
 import type { CollectionWithEmails } from "@/stores/collectionsData";
 import InnerLayoutWrapper from "@/layouts/InnerLayoutWrapper.vue";
 
+type Slot = "morning" | "afternoon" | "all";
+type DayStats = { total: number; morning: number; afternoon: number };
+
 const collectionsStore = useCollectionsStore();
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const pad = (n: number) => String(n).padStart(2, "0");
+const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
 
 const allScheduled = ref<CollectionWithEmails[]>([]);
 const loading = ref(false);
-const selectedDate = ref("");
+const selectedDate = ref(todayStr);
 const searchQuery = ref("");
-const slotFilter = ref<"all" | "morning" | "afternoon">("all");
+const slotFilter = ref<Slot>("all");
 
-// ── Calendar nav ───────────────────────────────────────────────────────────
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+// Calendar nav
 const calYear = ref(today.getFullYear());
 const calMonth = ref(today.getMonth());
 
@@ -56,30 +62,40 @@ const nextMonth = () => {
 };
 
 const getDateStr = (day: number) =>
-  `${calYear.value}-${String(calMonth.value + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  `${calYear.value}-${pad(calMonth.value + 1)}-${pad(day)}`;
 
-// ── Schedule map ────────────────────────────────────────────────────────────
+const isPastDate = (day: number) => {
+  const dateStr = getDateStr(day);
+  return dateStr < todayStr;
+};
+
+// Schedule map and memoized stats
 const scheduleMap = computed(() => {
   const map: Record<string, CollectionWithEmails[]> = {};
-  allScheduled.value.forEach((c) => {
+  for (const c of allScheduled.value) {
     if (c.scheduled_date) {
-      if (!map[c.scheduled_date]) map[c.scheduled_date] = [];
-      map[c.scheduled_date].push(c);
+      (map[c.scheduled_date] ??= []).push(c);
     }
-  });
+  }
+  return map;
+});
+
+const statsMap = computed(() => {
+  const map: Record<string, DayStats> = {};
+  for (const date in scheduleMap.value) {
+    const items = scheduleMap.value[date] || [];
+    const morning = items.filter((c) => c.time_slot === "morning").length;
+    const afternoon = items.filter((c) => c.time_slot === "afternoon").length;
+    map[date] = { total: items.length, morning, afternoon };
+  }
   return map;
 });
 
 const MORNING_MAX = 50;
 const AFTERNOON_MAX = 50;
 
-const getDayStats = (day: number) => {
-  const items = scheduleMap.value[getDateStr(day)] || [];
-  const morning = items.filter((c) => c.time_slot === "morning").length;
-  const afternoon = items.filter((c) => c.time_slot === "afternoon").length;
-  return { total: items.length, morning, afternoon };
-};
-
+const getDayStats = (day: number) =>
+  statsMap.value[getDateStr(day)] ?? { total: 0, morning: 0, afternoon: 0 };
 const isFull = (day: number) => {
   const s = getDayStats(day);
   return s.morning >= MORNING_MAX && s.afternoon >= AFTERNOON_MAX;
@@ -89,6 +105,7 @@ const getDayClass = (day: number | null) => {
   if (!day) return "";
   const ds = getDateStr(day);
   if (selectedDate.value === ds) return "brd-day--selected";
+  if (isPastDate(day)) return "brd-day--past";
   const stats = getDayStats(day);
   if (stats.total === 0) return "brd-day--empty-slot";
   if (isFull(day)) return "brd-day--full";
@@ -96,25 +113,23 @@ const getDayClass = (day: number | null) => {
 };
 
 const selectDay = (day: number | null) => {
-  if (!day) return;
+  if (!day || isPastDate(day)) return;
   selectedDate.value = getDateStr(day);
   slotFilter.value = "all";
   searchQuery.value = "";
 };
 
-// ── Selected day residents ──────────────────────────────────────────────────
-const selectedDayItems = computed(() => {
-  if (!selectedDate.value) return [];
-  return scheduleMap.value[selectedDate.value] || [];
-});
+// Selected day residents and filters
+const selectedDayItems = computed(() =>
+  selectedDate.value ? scheduleMap.value[selectedDate.value] || [] : [],
+);
 
 const filteredItems = computed(() => {
   let items = selectedDayItems.value;
-  if (slotFilter.value !== "all") {
+  if (slotFilter.value !== "all")
     items = items.filter((c) => c.time_slot === slotFilter.value);
-  }
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase();
+  const q = searchQuery.value.trim().toLowerCase();
+  if (q) {
     items = items.filter(
       (c) =>
         c.address?.toLowerCase().includes(q) ||
@@ -159,23 +174,30 @@ const slotChipColor = (slot: string) =>
   slot === "morning" ? "orange-darken-2" : "blue-darken-2";
 
 // Month summary counts
-const monthMorningTotal = computed(() => {
-  const prefix = `${calYear.value}-${String(calMonth.value + 1).padStart(2, "0")}`;
-  return allScheduled.value.filter(
-    (c) => c.scheduled_date?.startsWith(prefix) && c.time_slot === "morning",
-  ).length;
-});
-const monthAfternoonTotal = computed(() => {
-  const prefix = `${calYear.value}-${String(calMonth.value + 1).padStart(2, "0")}`;
-  return allScheduled.value.filter(
-    (c) => c.scheduled_date?.startsWith(prefix) && c.time_slot === "afternoon",
-  ).length;
-});
+const monthPrefix = computed(
+  () => `${calYear.value}-${pad(calMonth.value + 1)}`,
+);
+const monthMorningTotal = computed(
+  () =>
+    allScheduled.value.filter(
+      (c) =>
+        c.scheduled_date?.startsWith(monthPrefix.value) &&
+        c.time_slot === "morning",
+    ).length,
+);
+const monthAfternoonTotal = computed(
+  () =>
+    allScheduled.value.filter(
+      (c) =>
+        c.scheduled_date?.startsWith(monthPrefix.value) &&
+        c.time_slot === "afternoon",
+    ).length,
+);
 const monthTotal = computed(
   () => monthMorningTotal.value + monthAfternoonTotal.value,
 );
 
-// ── Data fetch ──────────────────────────────────────────────────────────────
+// Data fetch
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -317,6 +339,8 @@ onMounted(fetchData);
                       :key="idx"
                       class="brd-cell"
                       :class="day ? getDayClass(day) : 'brd-day--null'"
+                      :aria-disabled="day ? isPastDate(day) : undefined"
+                      :tabindex="day && !isPastDate(day) ? 0 : -1"
                       @click="selectDay(day)"
                     >
                       <template v-if="day">
@@ -676,6 +700,16 @@ export default { name: "ScheduleCalendarView" };
     background: #f9f9f9;
     &:hover {
       background: #eeeeee;
+    }
+  }
+  &--past {
+    background: #f4f4f4;
+    color: rgba(0, 0, 0, 0.35);
+    cursor: not-allowed;
+    opacity: 0.75;
+    &:hover {
+      background: #f4f4f4;
+      transform: none;
     }
   }
   &--has-items {
