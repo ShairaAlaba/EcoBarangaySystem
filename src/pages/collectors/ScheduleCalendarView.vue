@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useCollectionsStore } from "@/stores/collectionsData";
+import { useAuthUserStore } from "@/stores/authUser";
 import type { CollectionWithEmails } from "@/stores/collectionsData";
 import InnerLayoutWrapper from "@/layouts/InnerLayoutWrapper.vue";
 
@@ -8,6 +9,7 @@ type Slot = "morning" | "afternoon" | "all";
 type DayStats = { total: number; morning: number; afternoon: number };
 
 const collectionsStore = useCollectionsStore();
+const authStore = useAuthUserStore();
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -20,7 +22,6 @@ const selectedDate = ref(todayStr);
 const searchQuery = ref("");
 const slotFilter = ref<Slot>("all");
 
-// Calendar nav
 const calYear = ref(today.getFullYear());
 const calMonth = ref(today.getMonth());
 
@@ -30,6 +31,12 @@ const calTitle = computed(() =>
     year: "numeric",
   }),
 );
+
+const myScheduled = computed(() => {
+  const authId = authStore.userData?.id;
+  if (!authId) return [];
+  return allScheduled.value.filter((c) => c.collector_assign === authId);
+});
 
 const calDays = computed(() => {
   const year = calYear.value;
@@ -54,6 +61,7 @@ const prevMonth = () => {
     calYear.value--;
   } else calMonth.value--;
 };
+
 const nextMonth = () => {
   if (calMonth.value === 11) {
     calMonth.value = 0;
@@ -69,10 +77,9 @@ const isPastDate = (day: number) => {
   return dateStr < todayStr;
 };
 
-// Schedule map and memoized stats
 const scheduleMap = computed(() => {
   const map: Record<string, CollectionWithEmails[]> = {};
-  for (const c of allScheduled.value) {
+  for (const c of myScheduled.value) {
     if (c.scheduled_date) {
       (map[c.scheduled_date] ??= []).push(c);
     }
@@ -96,6 +103,7 @@ const AFTERNOON_MAX = 50;
 
 const getDayStats = (day: number) =>
   statsMap.value[getDateStr(day)] ?? { total: 0, morning: 0, afternoon: 0 };
+
 const isFull = (day: number) => {
   const s = getDayStats(day);
   return s.morning >= MORNING_MAX && s.afternoon >= AFTERNOON_MAX;
@@ -119,39 +127,42 @@ const selectDay = (day: number | null) => {
   searchQuery.value = "";
 };
 
-// Selected day residents and filters
 const selectedDayItems = computed(() =>
   selectedDate.value ? scheduleMap.value[selectedDate.value] || [] : [],
 );
 
 const filteredItems = computed(() => {
   let items = selectedDayItems.value;
-  if (slotFilter.value !== "all")
+  if (slotFilter.value !== "all") {
     items = items.filter((c) => c.time_slot === slotFilter.value);
+  }
+
   const q = searchQuery.value.trim().toLowerCase();
   if (q) {
     items = items.filter(
       (c) =>
         c.address?.toLowerCase().includes(q) ||
-        c.requester_email?.toLowerCase().includes(q) ||
         c.requester_name?.toLowerCase().includes(q) ||
+        c.requester_email?.toLowerCase().includes(q) ||
         c.garbage_type?.toLowerCase().includes(q) ||
         c.purok?.toLowerCase().includes(q),
     );
   }
+
   return items;
 });
 
 const morningItems = computed(() =>
   selectedDayItems.value.filter((c) => c.time_slot === "morning"),
 );
+
 const afternoonItems = computed(() =>
   selectedDayItems.value.filter((c) => c.time_slot === "afternoon"),
 );
 
 const selectedDateFormatted = computed(() => {
   if (!selectedDate.value) return "";
-  const d = new Date(selectedDate.value + "T00:00:00");
+  const d = new Date(`${selectedDate.value}T00:00:00`);
   return d.toLocaleDateString("en-PH", {
     weekday: "long",
     year: "numeric",
@@ -173,31 +184,32 @@ const statusColor = (status: string) => {
 const slotChipColor = (slot: string) =>
   slot === "morning" ? "orange-darken-2" : "blue-darken-2";
 
-// Month summary counts
 const monthPrefix = computed(
   () => `${calYear.value}-${pad(calMonth.value + 1)}`,
 );
+
 const monthMorningTotal = computed(
   () =>
-    allScheduled.value.filter(
+    myScheduled.value.filter(
       (c) =>
         c.scheduled_date?.startsWith(monthPrefix.value) &&
         c.time_slot === "morning",
     ).length,
 );
+
 const monthAfternoonTotal = computed(
   () =>
-    allScheduled.value.filter(
+    myScheduled.value.filter(
       (c) =>
         c.scheduled_date?.startsWith(monthPrefix.value) &&
         c.time_slot === "afternoon",
     ).length,
 );
+
 const monthTotal = computed(
   () => monthMorningTotal.value + monthAfternoonTotal.value,
 );
 
-// Data fetch
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -216,7 +228,6 @@ onMounted(fetchData);
   <InnerLayoutWrapper>
     <template #content>
       <v-container fluid class="pa-6">
-        <!-- Header -->
         <v-row class="mb-4">
           <v-col cols="12">
             <div
@@ -224,11 +235,10 @@ onMounted(fetchData);
             >
               <div>
                 <h1 class="text-h4 font-weight-bold mb-1">
-                  Collection Schedule
+                  My Collection Schedule
                 </h1>
                 <p class="text-body-2 text-medium-emphasis">
-                  View all resident-scheduled pickups. Each day has max 50
-                  morning + 50 afternoon slots.
+                  View only the scheduled requests currently assigned to you.
                 </p>
               </div>
               <v-btn
@@ -244,7 +254,6 @@ onMounted(fetchData);
           </v-col>
         </v-row>
 
-        <!-- Month Summary Cards -->
         <v-row class="mb-4">
           <v-col cols="12" sm="4">
             <v-card rounded="lg" color="primary" variant="tonal">
@@ -253,7 +262,7 @@ onMounted(fetchData);
                   This Month Total
                 </div>
                 <div class="text-h5 font-weight-bold">{{ monthTotal }}</div>
-                <div class="text-caption">scheduled pickups</div>
+                <div class="text-caption">assigned scheduled pickups</div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -261,12 +270,12 @@ onMounted(fetchData);
             <v-card rounded="lg" color="orange" variant="tonal">
               <v-card-text class="py-3 px-4">
                 <div class="text-caption text-medium-emphasis">
-                  Morning Slots Used
+                  Morning Slots
                 </div>
                 <div class="text-h5 font-weight-bold">
                   {{ monthMorningTotal }}
                 </div>
-                <div class="text-caption">8:00 AM – 12:00 PM</div>
+                <div class="text-caption">8:00 AM - 12:00 PM</div>
               </v-card-text>
             </v-card>
           </v-col>
@@ -274,19 +283,18 @@ onMounted(fetchData);
             <v-card rounded="lg" color="blue" variant="tonal">
               <v-card-text class="py-3 px-4">
                 <div class="text-caption text-medium-emphasis">
-                  Afternoon Slots Used
+                  Afternoon Slots
                 </div>
                 <div class="text-h5 font-weight-bold">
                   {{ monthAfternoonTotal }}
                 </div>
-                <div class="text-caption">1:00 PM – 5:00 PM</div>
+                <div class="text-caption">1:00 PM - 5:00 PM</div>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
 
         <v-row>
-          <!-- Left: Calendar -->
           <v-col cols="12" md="5">
             <v-card rounded="lg" elevation="3" class="h-100 schedule-card">
               <v-card-title
@@ -302,7 +310,6 @@ onMounted(fetchData);
                 </div>
 
                 <template v-else>
-                  <!-- Month nav -->
                   <div class="d-flex align-center justify-space-between mb-3">
                     <v-btn
                       icon="mdi-chevron-left"
@@ -321,7 +328,6 @@ onMounted(fetchData);
                     />
                   </div>
 
-                  <!-- Weekday headers -->
                   <div class="brd-grid brd-grid--header mb-1">
                     <div
                       v-for="h in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']"
@@ -332,7 +338,6 @@ onMounted(fetchData);
                     </div>
                   </div>
 
-                  <!-- Days -->
                   <div class="brd-grid">
                     <div
                       v-for="(day, idx) in calDays"
@@ -375,7 +380,6 @@ onMounted(fetchData);
                     </div>
                   </div>
 
-                  <!-- Legend -->
                   <v-divider class="my-3" />
                   <div class="d-flex flex-wrap ga-2">
                     <div class="d-flex align-center ga-1">
@@ -408,7 +412,6 @@ onMounted(fetchData);
             </v-card>
           </v-col>
 
-          <!-- Right: Resident List -->
           <v-col cols="12" md="7">
             <v-card rounded="lg" elevation="3" class="h-100 schedule-card">
               <v-card-title
@@ -419,28 +422,13 @@ onMounted(fetchData);
                   {{
                     selectedDate
                       ? selectedDateFormatted
-                      : "Select a date to view residents"
+                      : "Select a date to view assigned requests"
                   }}
                 </span>
               </v-card-title>
 
               <v-card-text class="pa-0">
-                <!-- No date selected -->
-                <div
-                  v-if="!selectedDate"
-                  class="d-flex flex-column align-center justify-center pa-10 text-medium-emphasis"
-                >
-                  <v-icon size="48" class="mb-3" color="grey-lighten-1"
-                    >mdi-calendar-cursor</v-icon
-                  >
-                  <p class="text-body-2">
-                    Click on any date in the calendar to view scheduled
-                    residents.
-                  </p>
-                </div>
-
-                <template v-else>
-                  <!-- Slot summary chips -->
+                <template v-if="selectedDate">
                   <div
                     class="d-flex align-center ga-2 flex-wrap px-4 pt-3 pb-2"
                   >
@@ -471,7 +459,6 @@ onMounted(fetchData);
                     </v-chip>
                   </div>
 
-                  <!-- Search + filter -->
                   <div class="px-4 pb-3 d-flex ga-2 flex-wrap">
                     <v-text-field
                       v-model="searchQuery"
@@ -502,7 +489,6 @@ onMounted(fetchData);
                     </v-btn-toggle>
                   </div>
 
-                  <!-- No results -->
                   <div
                     v-if="filteredItems.length === 0"
                     class="text-center pa-8 text-medium-emphasis"
@@ -511,11 +497,10 @@ onMounted(fetchData);
                       >mdi-calendar-blank</v-icon
                     >
                     <p class="text-body-2">
-                      No pickups found for this selection.
+                      No assigned pickups found for this selection.
                     </p>
                   </div>
 
-                  <!-- Resident list -->
                   <v-list v-else class="resident-list" density="compact">
                     <template
                       v-for="(item, idx) in filteredItems"
@@ -557,8 +542,8 @@ onMounted(fetchData);
                               <v-icon start size="10">mdi-clock-outline</v-icon>
                               {{
                                 item.time_slot === "morning"
-                                  ? "8AM–12PM"
-                                  : "1PM–5PM"
+                                  ? "8AM-12PM"
+                                  : "1PM-5PM"
                               }}
                             </v-chip>
                             <v-chip
@@ -620,15 +605,15 @@ onMounted(fetchData);
 </template>
 
 <script lang="ts">
-export default { name: "ScheduleCalendarView" };
+export default { name: "CollectorsScheduleCalendarView" };
 </script>
 
 <style scoped lang="scss">
-/* Calendar grid – Mon to Fri only (5 columns) */
 .brd-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 5px;
+
   &--header .brd-cell--header {
     font-size: 10px;
     font-weight: 700;
@@ -661,6 +646,7 @@ export default { name: "ScheduleCalendarView" };
   line-height: 1;
   color: inherit;
 }
+
 .brd-count {
   font-size: 10px;
   font-weight: 600;
@@ -675,13 +661,16 @@ export default { name: "ScheduleCalendarView" };
   gap: 3px;
   margin-top: 3px;
 }
+
 .brd-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+
   &.dot-ok {
     background: rgb(var(--v-theme-success));
   }
+
   &.dot-full {
     background: rgb(var(--v-theme-error));
   }
@@ -692,61 +681,73 @@ export default { name: "ScheduleCalendarView" };
     cursor: default;
     background: transparent;
   }
+
   &--empty-slot {
     background: rgb(var(--v-theme-surface-variant));
+
     &:hover {
       background: rgba(var(--v-theme-on-surface), 0.08);
     }
   }
+
   &--past {
     background: rgba(var(--v-theme-on-surface), 0.04);
     color: rgba(var(--v-theme-on-surface), 0.35);
     cursor: not-allowed;
     opacity: 0.75;
+
     &:hover {
       background: rgba(var(--v-theme-on-surface), 0.04);
       transform: none;
     }
   }
+
   &--has-items {
     background: rgba(var(--v-theme-primary), 0.12);
     border: 1.5px solid rgba(var(--v-theme-primary), 0.5);
+
     &:hover {
       background: rgba(var(--v-theme-primary), 0.18);
       transform: scale(1.07);
     }
   }
+
   &--full {
     background: rgba(var(--v-theme-error), 0.12);
     border: 1.5px solid rgba(var(--v-theme-error), 0.5);
     cursor: default;
   }
+
   &--selected {
     background: rgb(var(--v-theme-primary)) !important;
     color: rgb(var(--v-theme-on-primary)) !important;
+
     .brd-num {
       color: rgb(var(--v-theme-on-primary));
     }
+
     .brd-count {
       color: rgba(var(--v-theme-on-primary), 0.82);
     }
   }
 }
 
-/* Legend */
 .brd-legend {
   width: 14px;
   height: 14px;
   border-radius: 4px;
   display: inline-block;
+
   &--items {
     background: rgba(var(--v-theme-primary), 0.12);
     border: 1.5px solid rgba(var(--v-theme-primary), 0.5);
   }
+
   &--full {
     background: rgba(var(--v-theme-error), 0.12);
     border: 1.5px solid rgba(var(--v-theme-error), 0.5);
   }
+
   &--selected {
     background: rgb(var(--v-theme-primary));
   }
@@ -757,11 +758,13 @@ export default { name: "ScheduleCalendarView" };
   width: 8px;
   height: 8px;
   border-radius: 50%;
+
   &.dot-ok {
-    background: #4caf50;
+    background: rgb(var(--v-theme-success));
   }
+
   &.dot-full {
-    background: #f44336;
+    background: rgb(var(--v-theme-error));
   }
 }
 

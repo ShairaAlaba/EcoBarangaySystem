@@ -402,17 +402,15 @@ export const useCollectionsStore = defineStore("collections", () => {
       );
 
       // Enrich feedbacks with user emails and names
-      const feedbacksWithUserInfo: FeedbackWithUser[] = data.map(
-        (feedback) => {
-          const userData = userDataMap.get(feedback.user_id);
+      const feedbacksWithUserInfo: FeedbackWithUser[] = data.map((feedback) => {
+        const userData = userDataMap.get(feedback.user_id);
 
-          return {
-            ...feedback,
-            user_email: userData?.email,
-            user_name: userData?.full_name,
-          };
-        },
-      );
+        return {
+          ...feedback,
+          user_email: userData?.email,
+          user_name: userData?.full_name,
+        };
+      });
 
       feedbacks.value = feedbacksWithUserInfo;
       return feedbacksWithUserInfo;
@@ -520,9 +518,7 @@ export const useCollectionsStore = defineStore("collections", () => {
       return true;
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to delete user feedbacks";
+        err instanceof Error ? err.message : "Failed to delete user feedbacks";
       return false;
     } finally {
       loading.value = false;
@@ -571,7 +567,10 @@ export const useCollectionsStore = defineStore("collections", () => {
 
       if (!data || data.length === 0) return 0;
 
-      const totalRating = data.reduce((sum, feedback) => sum + (feedback.rate || 0), 0);
+      const totalRating = data.reduce(
+        (sum, feedback) => sum + (feedback.rate || 0),
+        0,
+      );
       return totalRating / data.length;
     } catch (err) {
       error.value =
@@ -617,8 +616,10 @@ export const useCollectionsStore = defineStore("collections", () => {
       if (feedbacksError) throw feedbacksError;
 
       const totalFeedbacks = feedbacks?.length || 0;
-      const totalRating = feedbacks?.reduce((sum, f) => sum + (f.rate || 0), 0) || 0;
-      const averageRating = totalFeedbacks > 0 ? totalRating / totalFeedbacks : 0;
+      const totalRating =
+        feedbacks?.reduce((sum, f) => sum + (f.rate || 0), 0) || 0;
+      const averageRating =
+        totalFeedbacks > 0 ? totalRating / totalFeedbacks : 0;
 
       // Calculate rating distribution
       const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -635,9 +636,7 @@ export const useCollectionsStore = defineStore("collections", () => {
       };
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch feedback stats";
+        err instanceof Error ? err.message : "Failed to fetch feedback stats";
       return {
         totalFeedbacks: 0,
         averageRating: 0,
@@ -1031,7 +1030,8 @@ export const useCollectionsStore = defineStore("collections", () => {
     const extractMsg = (err: any): string => {
       if (!err) return "Unknown error";
       if (typeof err.message === "string" && err.message) return err.message;
-      if (typeof err.error_description === "string") return err.error_description;
+      if (typeof err.error_description === "string")
+        return err.error_description;
       if (typeof err === "string") return err;
       return JSON.stringify(err);
     };
@@ -1052,7 +1052,9 @@ export const useCollectionsStore = defineStore("collections", () => {
           (createError as any).code === "42703";
 
         if (isMissingColumn) {
-          console.warn("scheduled_date/time_slot columns not found in DB — retrying without them. Add those columns to Supabase to enable scheduling.");
+          console.warn(
+            "scheduled_date/time_slot columns not found in DB — retrying without them. Add those columns to Supabase to enable scheduling.",
+          );
           const fallbackData: any = { ...collectionData };
           delete fallbackData.scheduled_date;
           delete fallbackData.time_slot;
@@ -1360,17 +1362,11 @@ export const useCollectionsStore = defineStore("collections", () => {
 
       // If status is provided and not "all", only delete collections with that status
       if (status && status !== "all") {
-        query = supabase
-          .from("collections")
-          .delete()
-          .eq("status", status);
+        query = supabase.from("collections").delete().eq("status", status);
       } else {
         // For "all" status, we need to delete all records but with a safe WHERE clause
         // We'll use a condition that matches all records (id is not null)
-        query = supabase
-          .from("collections")
-          .delete()
-          .not("id", "is", null); // This matches all records since id is never null
+        query = supabase.from("collections").delete().not("id", "is", null); // This matches all records since id is never null
       }
 
       const { error: deleteError } = await query;
@@ -1379,7 +1375,9 @@ export const useCollectionsStore = defineStore("collections", () => {
 
       // Update local state based on what was deleted
       if (status && status !== "all") {
-        collections.value = collections.value.filter(c => c.status !== status);
+        collections.value = collections.value.filter(
+          (c) => c.status !== status,
+        );
       } else {
         collections.value = [];
       }
@@ -1401,9 +1399,9 @@ export const useCollectionsStore = defineStore("collections", () => {
     try {
       // First try to fetch from profiles table
       const { data, error } = await supabase
-        .from('profiles')
-        .select('email, full_name')
-        .eq('id', userId)
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", userId)
         .single();
 
       if (!error && data) {
@@ -1440,13 +1438,16 @@ export const useCollectionsStore = defineStore("collections", () => {
     try {
       // Use the new view to get data + user info in one go
       const { data, error: fetchError } = await supabase
-        .from("collections_with_user_info")
+        .from("collections")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (fetchError) {
         // Fallback to old method if view doesn't exist yet
-        console.warn("View collections_with_user_info not found, falling back...", fetchError);
+        console.warn(
+          "View collections_with_user_info not found, falling back...",
+          fetchError,
+        );
         return await fetchCollectionsWithEmailsLegacy();
       }
 
@@ -1465,7 +1466,7 @@ export const useCollectionsStore = defineStore("collections", () => {
 
   // Legacy method for fallback
   const fetchCollectionsWithEmailsLegacy = async () => {
-     try {
+    try {
       const { data, error: fetchError } = await supabase
         .from("collections")
         .select("*")
@@ -1521,7 +1522,7 @@ export const useCollectionsStore = defineStore("collections", () => {
       console.error("Legacy fetch error", err);
       return [];
     }
-  }
+  };
 
   const fetchCollectionWithEmails = async (collectionId: number) => {
     loading.value = true;
@@ -1530,7 +1531,7 @@ export const useCollectionsStore = defineStore("collections", () => {
     try {
       // Use the view
       const { data, error: fetchError } = await supabase
-        .from("collections_with_user_info")
+        .from("collections")
         .select("*")
         .eq("id", collectionId)
         .single();
@@ -1538,7 +1539,6 @@ export const useCollectionsStore = defineStore("collections", () => {
       if (fetchError) throw fetchError;
 
       return data as CollectionWithEmails;
-
     } catch (err) {
       error.value =
         err instanceof Error
@@ -1556,7 +1556,7 @@ export const useCollectionsStore = defineStore("collections", () => {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from("collections_with_user_info")
+        .from("collections")
         .select("*")
         .eq("status", status)
         .order("created_at", { ascending: false });
@@ -1646,20 +1646,57 @@ export const useCollectionsStore = defineStore("collections", () => {
   /**
    * Fetch all collections that have a scheduled_date (for calendar views)
    */
-  const fetchScheduledCollections = async (): Promise<CollectionWithEmails[]> => {
+  const fetchScheduledCollections = async (): Promise<
+    CollectionWithEmails[]
+  > => {
     loading.value = true;
     error.value = undefined;
     try {
       const { data, error: fetchError } = await supabase
-        .from('collections_with_user_info')
-        .select('*')
-        .not('scheduled_date', 'is', null)
-        .order('scheduled_date', { ascending: true });
+        .from("collections")
+        .select("*")
+        .not("scheduled_date", "is", null)
+        .order("scheduled_date", { ascending: true });
 
       if (fetchError) throw fetchError;
-      return (data || []) as CollectionWithEmails[];
+
+      const scheduledCollections = (data || []) as CollectionWithEmails[];
+      const userIds = new Set<string>();
+
+      scheduledCollections.forEach((collection) => {
+        if (collection.request_by) userIds.add(collection.request_by);
+        if (collection.collector_assign)
+          userIds.add(collection.collector_assign);
+      });
+
+      const userDataMap = new Map<
+        string,
+        { email?: string; full_name?: string }
+      >();
+
+      await Promise.all(
+        Array.from(userIds).map(async (userId) => {
+          const userData = await getUserEmail(userId);
+          if (userData) {
+            userDataMap.set(userId, userData);
+          }
+        }),
+      );
+
+      return scheduledCollections.map((collection) => ({
+        ...collection,
+        requester_email: userDataMap.get(collection.request_by)?.email,
+        requester_name: userDataMap.get(collection.request_by)?.full_name,
+        collector_email: userDataMap.get(collection.collector_assign || "")
+          ?.email,
+        collector_name: userDataMap.get(collection.collector_assign || "")
+          ?.full_name,
+      }));
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch scheduled collections';
+      error.value =
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch scheduled collections";
       return [];
     } finally {
       loading.value = false;
@@ -1670,13 +1707,15 @@ export const useCollectionsStore = defineStore("collections", () => {
    * Get slot counts grouped by date and time_slot
    * Returns { [dateStr]: { morning: number, afternoon: number } }
    */
-  const getSlotCountsByDate = async (): Promise<Record<string, { morning: number; afternoon: number }>> => {
+  const getSlotCountsByDate = async (): Promise<
+    Record<string, { morning: number; afternoon: number }>
+  > => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('collections')
-        .select('scheduled_date, time_slot')
-        .not('scheduled_date', 'is', null)
-        .neq('status', 'cancelled');
+        .from("collections")
+        .select("scheduled_date, time_slot")
+        .not("scheduled_date", "is", null)
+        .neq("status", "cancelled");
 
       if (fetchError) throw fetchError;
 
@@ -1685,12 +1724,12 @@ export const useCollectionsStore = defineStore("collections", () => {
         const d = row.scheduled_date as string;
         const slot = row.time_slot as string;
         if (!counts[d]) counts[d] = { morning: 0, afternoon: 0 };
-        if (slot === 'morning') counts[d].morning++;
-        else if (slot === 'afternoon') counts[d].afternoon++;
+        if (slot === "morning") counts[d].morning++;
+        else if (slot === "afternoon") counts[d].afternoon++;
       });
       return counts;
     } catch (err) {
-      console.error('getSlotCountsByDate error:', err);
+      console.error("getSlotCountsByDate error:", err);
       return {};
     }
   };
@@ -1698,51 +1737,51 @@ export const useCollectionsStore = defineStore("collections", () => {
   // Realtime subscription
   const subscribeToCollections = () => {
     const channel = supabase
-      .channel('collections-channel')
+      .channel("collections-channel")
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'collections' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "collections" },
         async (payload) => {
-          console.log('Collections Realtime Change:', payload);
+          console.log("Collections Realtime Change:", payload);
 
-          if (payload.eventType === 'INSERT') {
+          if (payload.eventType === "INSERT") {
             // Fetch the specific new row with user info from the VIEW
             const { data } = await supabase
-              .from('collections_with_user_info')
-              .select('*')
-              .eq('id', payload.new.id)
+              .from("collections")
+              .select("*")
+              .eq("id", payload.new.id)
               .single();
 
             if (data) {
               collections.value.unshift(data as CollectionWithEmails);
             } else {
-               // Fallback: refresh all if simple fetch fails (unlikely)
-               await fetchCollectionsWithEmails(true);
+              // Fallback: refresh all if simple fetch fails (unlikely)
+              await fetchCollectionsWithEmails(true);
             }
-          }
-          else if (payload.eventType === 'UPDATE') {
+          } else if (payload.eventType === "UPDATE") {
             // Fetch updated row
             const { data } = await supabase
-              .from('collections_with_user_info')
-              .select('*')
-              .eq('id', payload.new.id)
+              .from("collections")
+              .select("*")
+              .eq("id", payload.new.id)
               .single();
 
-             if (data) {
-               const index = collections.value.findIndex(c => c.id === payload.new.id);
-               if (index !== -1) {
-                 collections.value[index] = data as CollectionWithEmails;
-               } else {
-                 // Might be a status change that moved it into a filtered view or just appeared
-                 collections.value.unshift(data as CollectionWithEmails);
-               }
-             }
+            if (data) {
+              const index = collections.value.findIndex(
+                (c) => c.id === payload.new.id,
+              );
+              if (index !== -1) {
+                collections.value[index] = data as CollectionWithEmails;
+              } else {
+                // Might be a status change that moved it into a filtered view or just appeared
+                collections.value.unshift(data as CollectionWithEmails);
+              }
+            }
+          } else if (payload.eventType === "DELETE") {
+            const oldId = (payload.old as any).id;
+            collections.value = collections.value.filter((c) => c.id !== oldId);
           }
-          else if (payload.eventType === 'DELETE') {
-             const oldId = (payload.old as any).id;
-             collections.value = collections.value.filter(c => c.id !== oldId);
-          }
-        }
+        },
       )
       .subscribe();
 
@@ -1810,6 +1849,6 @@ export const useCollectionsStore = defineStore("collections", () => {
     getAverageRatingByCollectionId,
     getFeedbackStatsByCollector,
     // Realtime
-    subscribeToCollections
+    subscribeToCollections,
   };
 });

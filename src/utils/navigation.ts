@@ -23,12 +23,12 @@ export const navigationConfig: NavigationGroup[] = [
         icon: "mdi-home",
         route: "/account/home",
       },
-       {
+      {
         title: "My Feedback",
         icon: "mdi-comment-account",
         route: "/residents/my-feedback",
         permission: "residents.feedback.view",
-      }
+      },
     ],
   },
   {
@@ -41,7 +41,13 @@ export const navigationConfig: NavigationGroup[] = [
         icon: "mdi-clipboard-text",
         route: "/collectors/requests",
         permission: "collectors.requests.view",
-      }
+      },
+      {
+        title: "Schedule Calendar",
+        icon: "mdi-calendar-month",
+        route: "/collectors/schedule-calendar",
+        permission: "collectors.schedule.view",
+      },
     ],
   },
   {
@@ -99,13 +105,13 @@ export const navigationConfig: NavigationGroup[] = [
         route: "/admin/feedback-management",
         permission: "admin.feedback.manage",
       },
-       {
+      {
         title: "Admin Requests History",
         icon: "mdi-history",
         route: "/collectors/requests-history",
         permission: "collectors.requests.history",
       },
-       {
+      {
         title: "Dashboard",
         icon: "mdi-view-dashboard",
         route: "/admin/dashboard",
@@ -117,12 +123,9 @@ export const navigationConfig: NavigationGroup[] = [
         icon: "mdi-bullhorn",
         route: "/developers/announcements",
         permission: "developers.announcements.manage",
-      }
+      },
     ],
   },
-
-
-
 ];
 
 // Helper function to get all permissions from navigation config
@@ -146,7 +149,7 @@ export const getAllPermissions = (): string[] => {
 
 // Helper function to get navigation items with selected state
 export const getNavigationWithSelection = (
-  selectedPermissions: string[] = []
+  selectedPermissions: string[] = [],
 ): NavigationGroup[] => {
   return navigationConfig.map((group) => ({
     ...group,
