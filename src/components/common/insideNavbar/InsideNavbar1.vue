@@ -23,7 +23,12 @@ const router = useRouter();
 const authStore = useAuthUserStore();
 
 // Permissions composable
-const { fetchUserPermissions, hasPageAccess, hasGroupAccess, isLoading: permissionsLoading } = usePermissions();
+const {
+  fetchUserPermissions,
+  hasPageAccess,
+  hasGroupAccess,
+  isLoading: permissionsLoading,
+} = usePermissions();
 
 // Responsive breakpoints
 const { mobile } = useDisplay();
@@ -78,21 +83,23 @@ const navbarConfig = computed(() => props.config?.navbar);
 // Filter navigation groups based on user permissions
 const navigationGroups = computed(() => {
   return navigationConfig
-    .map(group => {
+    .map((group) => {
       // Filter children based on page access
-      const accessibleChildren = group.children.filter(child => hasPageAccess(child.route))
+      const accessibleChildren = group.children.filter((child) =>
+        hasPageAccess(child.route),
+      );
 
       // Only include group if it has accessible children
       if (accessibleChildren.length > 0) {
         return {
           ...group,
-          children: accessibleChildren
-        }
+          children: accessibleChildren,
+        };
       }
 
-      return null
+      return null;
     })
-    .filter(Boolean) as NavigationGroup[]
+    .filter(Boolean) as NavigationGroup[];
 });
 
 // Initialize permissions on component mount
@@ -140,11 +147,11 @@ async function handleLogout() {
     <div class="pa-4 d-flex align-center">
       <template v-if="navbarConfig?.logo?.src">
         <v-img
-          :src="navbarConfig.logo.src"
+          src="/src/assets/logo.png"
           :alt="navbarConfig.logo.alt"
-          width="50"
-          height="50"
-          class="me-2 rounded-circle"
+          :width="48"
+          :height="48"
+          class="me-3 logo-image"
           cover
         >
           <template #error>
@@ -162,17 +169,9 @@ async function handleLogout() {
 
     <!-- Loading State -->
     <div v-if="permissionsLoading" class="pa-4">
-      <v-skeleton-loader
-        type="list-item"
-        class="mb-2"
-      ></v-skeleton-loader>
-      <v-skeleton-loader
-        type="list-item"
-        class="mb-2"
-      ></v-skeleton-loader>
-      <v-skeleton-loader
-        type="list-item"
-      ></v-skeleton-loader>
+      <v-skeleton-loader type="list-item" class="mb-2"></v-skeleton-loader>
+      <v-skeleton-loader type="list-item" class="mb-2"></v-skeleton-loader>
+      <v-skeleton-loader type="list-item"></v-skeleton-loader>
     </div>
 
     <!-- Navigation Menu -->
@@ -252,15 +251,14 @@ async function handleLogout() {
         <!-- Logo Image with Icon Fallback -->
         <template v-if="navbarConfig?.logo?.src">
           <v-img
-            :src="navbarConfig.logo.src"
+            src="/src/assets/logo.png"
             :alt="navbarConfig.logo.alt"
-            width="50"
-            height="50"
-            class="me-2 rounded-circle"
+            :width="48"
+            :height="48"
+            class="me-3 logo-image"
             cover
           >
             <template #error>
-              <!-- Fallback to icon if image fails to load -->
               <v-icon class="me-2" :icon="navbarConfig.icon" size="large" />
             </template>
           </v-img>
@@ -271,9 +269,7 @@ async function handleLogout() {
           <v-icon class="me-2" :icon="navbarConfig?.icon" size="large" />
         </template>
 
-        <span class="text-h6 font-weight-bold ms-2">{{
-          navbarConfig?.title
-        }}</span>
+        <span class="text-h6 font-weight-bold">{{ navbarConfig?.title }}</span>
       </div>
 
       <!-- Mobile Logo Only (no title) -->
@@ -383,5 +379,14 @@ async function handleLogout() {
     position: fixed !important; /* Ensure drawer is fixed to viewport */
     z-index: 1005 !important; /* Ensure mobile drawer is above toolbar */
   }
+}
+
+/* --- LOGO STYLES --- */
+.logo-image {
+  border-radius: 50% !important; /* Forces perfect circle */
+  aspect-ratio: 1 / 1; /* Ensures equal width and height */
+  background-color: white; /* Clean backdrop for transparent logos */
+  border: 2px solid white; /* Smooths the edges against the green navbar */
+  flex: none; /* Prevents Vuetify from squishing the image flex-box */
 }
 </style>
