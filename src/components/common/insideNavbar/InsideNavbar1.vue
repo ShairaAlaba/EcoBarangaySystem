@@ -147,11 +147,11 @@ async function handleLogout() {
     <div class="pa-4 d-flex align-center">
       <template v-if="navbarConfig?.logo?.src">
         <v-img
-          :src="navbarConfig.logo.src"
+          src="/src/assets/logo.png"
           :alt="navbarConfig.logo.alt"
-          width="50"
-          height="50"
-          class="me-2 rounded-circle"
+          :width="48"
+          :height="48"
+          class="me-3 logo-image"
           cover
         >
           <template #error>
@@ -251,15 +251,14 @@ async function handleLogout() {
         <!-- Logo Image with Icon Fallback -->
         <template v-if="navbarConfig?.logo?.src">
           <v-img
-            :src="navbarConfig.logo.src"
+            src="/src/assets/logo.png"
             :alt="navbarConfig.logo.alt"
-            width="50"
-            height="50"
-            class="me-2 rounded-circle"
+            :width="48"
+            :height="48"
+            class="me-3 logo-image"
             cover
           >
             <template #error>
-              <!-- Fallback to icon if image fails to load -->
               <v-icon class="me-2" :icon="navbarConfig.icon" size="large" />
             </template>
           </v-img>
@@ -270,9 +269,7 @@ async function handleLogout() {
           <v-icon class="me-2" :icon="navbarConfig?.icon" size="large" />
         </template>
 
-        <span class="text-h6 font-weight-bold ms-2">{{
-          navbarConfig?.title
-        }}</span>
+        <span class="text-h6 font-weight-bold">{{ navbarConfig?.title }}</span>
       </div>
 
       <!-- Mobile Logo Only (no title) -->
@@ -382,5 +379,14 @@ async function handleLogout() {
     position: fixed !important; /* Ensure drawer is fixed to viewport */
     z-index: 1005 !important; /* Ensure mobile drawer is above toolbar */
   }
+}
+
+/* --- LOGO STYLES --- */
+.logo-image {
+  border-radius: 50% !important; /* Forces perfect circle */
+  aspect-ratio: 1 / 1; /* Ensures equal width and height */
+  background-color: white; /* Clean backdrop for transparent logos */
+  border: 2px solid white; /* Smooths the edges against the green navbar */
+  flex: none; /* Prevents Vuetify from squishing the image flex-box */
 }
 </style>
