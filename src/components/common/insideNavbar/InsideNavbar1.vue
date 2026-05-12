@@ -23,7 +23,12 @@ const router = useRouter();
 const authStore = useAuthUserStore();
 
 // Permissions composable
-const { fetchUserPermissions, hasPageAccess, hasGroupAccess, isLoading: permissionsLoading } = usePermissions();
+const {
+  fetchUserPermissions,
+  hasPageAccess,
+  hasGroupAccess,
+  isLoading: permissionsLoading,
+} = usePermissions();
 
 // Responsive breakpoints
 const { mobile } = useDisplay();
@@ -78,21 +83,23 @@ const navbarConfig = computed(() => props.config?.navbar);
 // Filter navigation groups based on user permissions
 const navigationGroups = computed(() => {
   return navigationConfig
-    .map(group => {
+    .map((group) => {
       // Filter children based on page access
-      const accessibleChildren = group.children.filter(child => hasPageAccess(child.route))
+      const accessibleChildren = group.children.filter((child) =>
+        hasPageAccess(child.route),
+      );
 
       // Only include group if it has accessible children
       if (accessibleChildren.length > 0) {
         return {
           ...group,
-          children: accessibleChildren
-        }
+          children: accessibleChildren,
+        };
       }
 
-      return null
+      return null;
     })
-    .filter(Boolean) as NavigationGroup[]
+    .filter(Boolean) as NavigationGroup[];
 });
 
 // Initialize permissions on component mount
@@ -162,17 +169,9 @@ async function handleLogout() {
 
     <!-- Loading State -->
     <div v-if="permissionsLoading" class="pa-4">
-      <v-skeleton-loader
-        type="list-item"
-        class="mb-2"
-      ></v-skeleton-loader>
-      <v-skeleton-loader
-        type="list-item"
-        class="mb-2"
-      ></v-skeleton-loader>
-      <v-skeleton-loader
-        type="list-item"
-      ></v-skeleton-loader>
+      <v-skeleton-loader type="list-item" class="mb-2"></v-skeleton-loader>
+      <v-skeleton-loader type="list-item" class="mb-2"></v-skeleton-loader>
+      <v-skeleton-loader type="list-item"></v-skeleton-loader>
     </div>
 
     <!-- Navigation Menu -->

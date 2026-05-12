@@ -48,13 +48,13 @@
     "_footerComment": "Select the footer component to use: 1 or 2",
     "footerComponent": "1",
     "navbar": {
-      "title": "Eco-Barangay E-Waste",
+      "title": "Eco-Barangay",
       "icon": "mdi-recycle",
       "logo": {
-        "src": "/src/assets/logo.png",
+        "src": "src/assets/logo.png",
         "alt": "Eco-Barangay Logo",
-        "width": 32,
-        "height": 32
+        "width": 48,
+        "height": 48
       },
       "color": "primary",
       "elevation": 2,

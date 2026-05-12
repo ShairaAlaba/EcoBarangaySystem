@@ -154,10 +154,10 @@ function scrollToSection(sectionId: string) {
         <v-img
           :src="navbarConfig.logo.src"
           :alt="navbarConfig.logo.alt"
-          :width="navbarConfig.logo.width"
-          :height="navbarConfig.logo.height"
-          class="me-2"
-          contain
+          :width="48"
+          :height="48"
+          class="me-3 logo-image"
+          cover
         >
           <template #error>
             <v-icon class="me-2" :icon="navbarConfig.icon" size="large" />
@@ -243,13 +243,12 @@ function scrollToSection(sectionId: string) {
           <v-img
             :src="navbarConfig.logo.src"
             :alt="navbarConfig.logo.alt"
-            :width="navbarConfig.logo.width"
-            :height="navbarConfig.logo.height"
-            class="me-2"
-            contain
+            :width="48"
+            :height="48"
+            class="me-3 logo-image"
+            cover
           >
             <template #error>
-              <!-- Fallback to icon if image fails to load -->
               <v-icon class="me-2" :icon="navbarConfig.icon" size="large" />
             </template>
           </v-img>
@@ -263,8 +262,8 @@ function scrollToSection(sectionId: string) {
         <span
           :class="
             mobile
-              ? 'text-subtitle-1 font-weight-bold ms-2 text-truncate navbar-title'
-              : 'text-h6 font-weight-bold ms-2 navbar-title'
+              ? 'text-subtitle-1 font-weight-bold text-truncate navbar-title'
+              : 'text-h6 font-weight-bold navbar-title'
           "
           style="max-width: 150px"
         >
@@ -344,5 +343,14 @@ function scrollToSection(sectionId: string) {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+}
+
+/* --- LOGO STYLES --- */
+.logo-image {
+  border-radius: 50% !important; /* Forces perfect circle */
+  aspect-ratio: 1 / 1; /* Ensures equal width and height */
+  background-color: white; /* Clean backdrop for transparent logos */
+  border: 2px solid white; /* Smooths the edges against the green navbar */
+  flex: none; /* Prevents Vuetify from squishing the image flex-box */
 }
 </style>
