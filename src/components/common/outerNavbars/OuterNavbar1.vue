@@ -152,7 +152,7 @@ function scrollToSection(sectionId: string) {
     <div class="pa-4 d-flex align-center">
       <template v-if="navbarConfig?.logo?.src">
         <v-img
-          :src="navbarConfig.logo.src"
+          src="/src/assets/logo.png"
           :alt="navbarConfig.logo.alt"
           :width="48"
           :height="48"
@@ -241,7 +241,7 @@ function scrollToSection(sectionId: string) {
         <!-- Logo Image with Icon Fallback -->
         <template v-if="navbarConfig?.logo?.src">
           <v-img
-            :src="navbarConfig.logo.src"
+            src="/src/assets/logo.png"
             :alt="navbarConfig.logo.alt"
             :width="48"
             :height="48"
